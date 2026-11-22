@@ -1,0 +1,6 @@
+{
+  "name": "Rio Rise Pro — Scripts & Auto-Farm",
+  "description": "Painel de automação, scripts de auto-farm e pacotes VIP para Rio Rise Mobile RP.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
