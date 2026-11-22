@@ -458,7 +458,7 @@ export function AdminPanel({
             <div className="space-y-6">
               <div className="p-5 bg-[#11151E] border border-white/10 rounded-xl space-y-4">
                 <h3 className="font-display text-lg font-bold text-white">
-                  Cabeçalho & Banner do Teste Grátis
+                  Cabeçalho &amp; Oferta Relâmpago
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
@@ -476,40 +476,54 @@ export function AdminPanel({
                     }
                   />
                   <Field
-                    label="Kicker do Banner Teste Grátis"
-                    value={draft.plansSection.promoKicker}
+                    label="Botão da Oferta Relâmpago"
+                    value={draft.flashOffer.ctaLabel}
                     onChange={(v) =>
                       setDraft({
                         ...draft,
-                        plansSection: { ...draft.plansSection, promoKicker: v },
+                        flashOffer: { ...draft.flashOffer, ctaLabel: v },
                       })
                     }
                   />
-                  <Field
-                    label="Texto do Botão do Banner"
-                    value={draft.plansSection.promoCtaLabel}
-                    onChange={(v) =>
-                      setDraft({
-                        ...draft,
-                        plansSection: { ...draft.plansSection, promoCtaLabel: v },
-                      })
-                    }
-                  />
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Duração do Contador por Visita (segundos)
+                    </label>
+                    <input
+                      type="number"
+                      min={30}
+                      max={3599}
+                      value={draft.flashOffer.durationSeconds}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          flashOffer: {
+                            ...draft.flashOffer,
+                            durationSeconds: Math.min(
+                              3599,
+                              Math.max(30, Number(e.target.value) || 30)
+                            ),
+                          },
+                        })
+                      }
+                      className="w-full px-3.5 py-2 text-sm text-white bg-[#090B10] border border-white/15 rounded-lg focus:outline-none focus:border-[#00D4FF]"
+                    />
+                  </div>
                 </div>
                 <Field
-                  label="Título do Banner Teste Grátis"
-                  value={draft.plansSection.promoTitle}
+                  label="Título da Oferta Relâmpago"
+                  value={draft.flashOffer.title}
                   onChange={(v) =>
-                    setDraft({ ...draft, plansSection: { ...draft.plansSection, promoTitle: v } })
+                    setDraft({ ...draft, flashOffer: { ...draft.flashOffer, title: v } })
                   }
                 />
                 <TextAreaField
-                  label="Descrição do Banner Teste Grátis"
-                  value={draft.plansSection.promoDescription}
+                  label="Descrição da Oferta Relâmpago"
+                  value={draft.flashOffer.description}
                   onChange={(v) =>
                     setDraft({
                       ...draft,
-                      plansSection: { ...draft.plansSection, promoDescription: v },
+                      flashOffer: { ...draft.flashOffer, description: v },
                     })
                   }
                 />

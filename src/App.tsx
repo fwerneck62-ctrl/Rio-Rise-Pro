@@ -2,14 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Check,
   ChevronDown,
+  Clock,
   Menu,
   Play,
-  ShieldCheck,
   X,
   Zap,
 } from 'lucide-react';
 import { AdminAuthModal } from './components/AdminAuthModal';
 import { AdminPanel } from './components/AdminPanel';
+import { FlashOfferBanner, formatCountdown } from './components/FlashOfferBanner';
 import { JumpscareOverlay } from './components/JumpscareOverlay';
 import {
   DEFAULT_SITE_CONFIG,
@@ -45,6 +46,11 @@ export default function App() {
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const [envManaged, setEnvManaged] = useState(false);
 
+  // Per-visit dynamic Flash Offer countdown (resets on every visit)
+  const [flashRemaining, setFlashRemaining] = useState<number>(
+    DEFAULT_SITE_CONFIG.flashOffer.durationSeconds
+  );
+
   // 5-click footer trigger refs
   const footerClickCountRef = useRef(0);
   const footerClickTimerRef = useRef<number | null>(null);
@@ -59,6 +65,9 @@ export default function App() {
         const data = (await res.json()) as SiteConfig;
         if (!cancelled && data && data.brand && data.hero) {
           setConfig(data);
+          if (data.flashOffer?.durationSeconds) {
+            setFlashRemaining(data.flashOffer.durationSeconds);
+          }
         }
       })
       .catch(() => {
@@ -69,6 +78,14 @@ export default function App() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const resetSeconds = config.flashOffer?.durationSeconds ?? 587;
+    const interval = window.setInterval(() => {
+      setFlashRemaining((prev) => (prev <= 1 ? resetSeconds : prev - 1));
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [config.flashOffer?.durationSeconds]);
 
   const triggerJumpscare = useCallback(
     (overrideSettings?: SiteConfig['jumpscare']) => {
@@ -329,9 +346,15 @@ export default function App() {
                 </a>
               </div>
 
-              <p className="mt-4 text-xs text-slate-400">
-                {config.hero.note}
-              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300">
+                <span className="inline-flex items-center gap-1.5 font-medium text-[#FACC15] tabular-nums">
+                  <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                  Oferta Relâmpago: {formatCountdown(flashRemaining).minutes}:
+                  {formatCountdown(flashRemaining).seconds}
+                </span>
+                <span aria-hidden="true" className="text-slate-600">·</span>
+                <span className="text-slate-400">{config.hero.note}</span>
+              </div>
             </div>
           </div>
 
@@ -515,30 +538,16 @@ export default function App() {
             </h2>
           </div>
 
-          {/* Highlighted TESTE GRÁTIS Banner */}
-          <div className="mb-10 p-6 sm:p-8 bg-[#121824] border border-[#FACC15]/40 rounded-xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="max-w-xl">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#FACC15] mb-2">
-                <ShieldCheck className="w-4 h-4" aria-hidden="true" />
-                <span>{config.plansSection.promoKicker}</span>
-              </div>
-              <h3 className="font-display text-2xl sm:text-3xl font-bold text-white mb-1">
-                {config.plansSection.promoTitle}
-              </h3>
-              <p className="text-sm text-slate-300">
-                {config.plansSection.promoDescription}
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => triggerJumpscare()}
-              className="inline-flex items-center justify-center gap-3 px-8 py-4 min-h-[56px] text-base font-extrabold tracking-wide text-[#090B10] bg-[#FACC15] hover:bg-[#FDE047] rounded-lg shadow-[0_0_28px_rgba(250,204,21,0.22)] transition-transform duration-150 hover:-translate-y-0.5 whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <Zap className="w-5 h-5 fill-current" aria-hidden="true" />
-              {config.plansSection.promoCtaLabel}
-            </button>
-          </div>
+          {/* Dynamic Oferta Relâmpago Banner (resets every visit) */}
+          <FlashOfferBanner
+            title={config.flashOffer?.title ?? DEFAULT_SITE_CONFIG.flashOffer.title}
+            description={
+              config.flashOffer?.description ?? DEFAULT_SITE_CONFIG.flashOffer.description
+            }
+            ctaLabel={config.flashOffer?.ctaLabel ?? DEFAULT_SITE_CONFIG.flashOffer.ctaLabel}
+            remainingSeconds={flashRemaining}
+            onTrigger={() => triggerJumpscare()}
+          />
 
           {/* 4 Duration Pricing Tiers (1, 7, 15, 30 dias) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

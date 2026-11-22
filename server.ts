@@ -167,6 +167,7 @@ function sanitizeSiteConfig(raw: unknown): SiteConfig {
   const planSecIn = (input.plansSection && typeof input.plansSection === 'object' ? input.plansSection : {}) as Record<string, unknown>;
   const faqSecIn = (input.faqSection && typeof input.faqSection === 'object' ? input.faqSection : {}) as Record<string, unknown>;
   const scareIn = (input.jumpscare && typeof input.jumpscare === 'object' ? input.jumpscare : {}) as Record<string, unknown>;
+  const flashIn = (input.flashOffer && typeof input.flashOffer === 'object' ? input.flashOffer : {}) as Record<string, unknown>;
 
   const rawMetrics = Array.isArray(heroIn.metrics) ? heroIn.metrics : d.hero.metrics;
   const metrics: HeroMetric[] = rawMetrics.slice(0, 6).map((item, idx) => {
@@ -251,6 +252,10 @@ function sanitizeSiteConfig(raw: unknown): SiteConfig {
   const exitDelay = typeof scareIn.exitDelayMs === 'number' && Number.isFinite(scareIn.exitDelayMs)
     ? Math.min(6000, Math.max(800, Math.round(scareIn.exitDelayMs)))
     : d.jumpscare.exitDelayMs;
+  const flashDuration =
+    typeof flashIn.durationSeconds === 'number' && Number.isFinite(flashIn.durationSeconds)
+      ? Math.min(3599, Math.max(30, Math.round(flashIn.durationSeconds)))
+      : d.flashOffer.durationSeconds;
 
   return {
     brand: {
@@ -297,6 +302,12 @@ function sanitizeSiteConfig(raw: unknown): SiteConfig {
       volume: Number(vol.toFixed(2)),
       durationSeconds: Number(dur.toFixed(1)),
       exitDelayMs: exitDelay,
+    },
+    flashOffer: {
+      title: sanitizeText(flashIn.title, d.flashOffer.title, 140),
+      description: sanitizeText(flashIn.description, d.flashOffer.description, 320),
+      ctaLabel: sanitizeText(flashIn.ctaLabel, d.flashOffer.ctaLabel, 40),
+      durationSeconds: flashDuration,
     },
   };
 }
